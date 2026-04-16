@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIME CERTO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <nav class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4 flex justify-between items-center h-16">
+            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="switchView('public'); window.scrollTo({ top: 0, behavior: 'smooth' });">
+                <div class="bg-green-500 p-1.5 rounded-lg">
+                    <i data-lucide="volleyball" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-900"></i>
+                </div>
+                <span class="font-bold text-lg sm:text-xl tracking-tighter uppercase italic">TIME<span class="text-green-500">CERTO</span></span>
+            </div>
+            <div class="flex gap-1">
+                <button onclick="switchView('public')" id="btn-public" class="nav-btn active px-2 sm:px-4 py-2 rounded-t-lg text-xs sm:text-base font-medium transition-all flex items-center gap-1 sm:gap-2">
+                    <i data-lucide="layout-grid" class="w-3 h-3 sm:w-4 sm:h-4"></i> Público
+                </button>
+                <button onclick="switchView('placar')" id="btn-placar" class="nav-btn px-2 sm:px-4 py-2 rounded-t-lg text-xs sm:text-base font-medium transition-all flex items-center gap-1 sm:gap-2">
+                    <i data-lucide="monitor-play" class="w-3 h-3 sm:w-4 sm:h-4"></i> Placar
+                </button>
+                <button onclick="switchView('admin')" id="btn-admin" class="nav-btn px-2 sm:px-4 py-2 rounded-t-lg text-xs sm:text-base font-medium transition-all flex items-center gap-1 sm:gap-2">
+                    <i data-lucide="shield-check" class="w-3 h-3 sm:w-4 sm:h-4"></i> Admin
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center">
+        <div class="loader mb-4"></div>
+        <p class="text-slate-400 animate-pulse">Carregando Jogadores...</p>
+    </div>
+
+    <main class="max-w-7xl mx-auto w-full p-2 sm:p-4 md:p-8 flex-1">
+        
+        <section id="view-public" class="animate-in fade-in duration-500">
+            <header class="mb-8 sm:mb-12 mt-4 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-800/40 p-6 rounded-3xl border border-slate-700/50 shadow-lg">
+                <div class="flex-1 flex flex-col items-center md:items-start justify-center text-center md:text-left">
+                    <h2 class="text-4xl sm:text-5xl md:text-6xl font-black mb-2 tracking-tight text-white font-['Oswald'] drop-shadow-md">
+                        TURMA DO <span class="text-green-500">VÔLEI</span>
+                    </h2>
+                    <p class="text-sm sm:text-base text-slate-400 font-bold flex items-center justify-center md:justify-start gap-2 bg-slate-900/50 px-4 py-2 rounded-full border border-slate-700/50">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-green-500"></i> 
+                        Elo atualizado automaticamente!
+                    </p>
+                </div>
+
+                <div class="flex-[1.5] w-full bg-slate-900/80 p-4 sm:p-5 rounded-2xl border border-slate-700/50 shadow-inner">
+                    <!-- TÍTULO CLICÁVEL COM MELHOR VISIBILIDADE -->
+                    <div class="flex justify-between items-center cursor-pointer select-none p-2 sm:p-3 -mx-2 sm:-mx-3 -mt-2 rounded-xl hover:bg-slate-800/80 transition-colors group" onclick="document.getElementById('eloSystemContent').classList.toggle('hidden'); document.getElementById('eloSystemToggleIcon').classList.toggle('rotate-180');">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest m-0 text-center md:text-left flex items-center gap-1.5">
+                            <i data-lucide="bar-chart-2" class="w-4 h-4 text-green-500"></i> Sistema de Classificação
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] sm:text-[10px] text-slate-400 group-hover:text-green-400 font-bold transition-colors uppercase tracking-wider bg-slate-900 px-2 py-1 rounded-md border border-slate-700 group-hover:border-green-500/30">Ver Níveis</span>
+                            <div class="bg-slate-900 p-1 rounded-full group-hover:bg-green-500/20 border border-slate-700 group-hover:border-green-500/30 transition-all">
+                                <i data-lucide="chevron-down" id="eloSystemToggleIcon" class="w-4 h-4 text-slate-400 group-hover:text-green-400 transition-transform duration-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CONTEÚDO RECOLHIDO(hidden) -->
+                    <div id="eloSystemContent" class="hidden pt-4 transition-all border-t border-slate-700/50 mt-2">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                            <div class="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20 transition-all hover:bg-red-500/20">
+                                <div class="bg-red-900/50 p-1.5 rounded-md border border-red-500/30 shrink-0">
+                                    <i data-lucide="flame" class="w-4 h-4 sm:w-5 sm:h-5 text-red-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-red-500 leading-tight uppercase tracking-wider">Mestre</p>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold">800+ ELO</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 transition-all hover:bg-fuchsia-500/20">
+                                <div class="bg-fuchsia-900/50 p-1.5 rounded-md border border-fuchsia-500/30 shrink-0">
+                                    <i data-lucide="gem" class="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-fuchsia-400 leading-tight uppercase tracking-wider">Diamante</p>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold">650 - 799</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 transition-all hover:bg-cyan-500/20">
+                                <div class="bg-cyan-900/50 p-1.5 rounded-md border border-cyan-500/30 shrink-0">
+                                    <i data-lucide="shield" class="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-cyan-400 leading-tight uppercase tracking-wider">Platina</p>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold">550 - 649</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 transition-all hover:bg-yellow-500/20">
+                                <div class="bg-yellow-900/50 p-1.5 rounded-md border border-yellow-500/30 shrink-0">
+                                    <i data-lucide="award" class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-yellow-400 leading-tight uppercase tracking-wider">Ouro</p>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold">450 - 549</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-slate-400/10 border border-slate-400/20 transition-all hover:bg-slate-400/20">
+                                <div class="bg-slate-700/50 p-1.5 rounded-md border border-slate-400/30 shrink-0">
+                                    <i data-lucide="medal" class="w-4 h-4 sm:w-5 sm:h-5 text-slate-300"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-slate-300 leading-tight uppercase tracking-wider">Prata</p>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold">350 - 449</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 transition-all hover:bg-orange-500/20">
+                                <div class="bg-orange-900/50 p-1.5 rounded-md border border-orange-500/30 shrink-0">
+                                    <i data-lucide="medal" class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] sm:text-xs font-black text-orange-500 leading-tight uppercase tracking-wider">Bronze</p>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-400 font-bold">0 - 349</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="publicGrid" class="flex flex-col w-full gap-4 justify-center mb-16"></div>
+            
+            <div id="publicTeamsSection" class="border-t border-slate-800 pt-8 sm:pt-12 hidden">
+                <header class="mb-6 sm:mb-10 text-center">
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
+                        <i data-lucide="users" class="text-green-500 w-6 h-6 sm:w-8 sm:h-8"></i> Times Sorteados
+                    </h2>
+                </header>
+                <div id="publicTeamsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-16"></div>
+            </div>
+
+            <div id="rankingSection" class="mt-8 sm:mt-12 border-t border-slate-800 pt-8 sm:pt-12 max-w-4xl mx-auto">
+                <header class="mb-6 sm:mb-10 text-center">
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center gap-2 sm:gap-3 text-yellow-500">
+                        <i data-lucide="trophy" class="w-6 h-6 sm:w-8 sm:h-8"></i> Ranking de Vitórias
+                    </h2>
+                    <p class="text-sm sm:text-base text-slate-400">Os maiores vencedores da Turma do Vôlei</p>
+                </header>
+                <div id="rankingList" class="bg-slate-800/40 p-3 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-700"></div>
+            </div>
+        </section>
+
+        <section id="view-login" class="hidden-view flex justify-center py-12 sm:py-20 px-2">
+            <div class="bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700 w-full max-w-md">
+                <div class="text-center mb-8">
+                    <i data-lucide="lock" class="w-10 h-10 sm:w-12 sm:h-12 text-green-500 mx-auto mb-4"></i>
+                    <h2 class="text-xl sm:text-2xl font-bold">Acesso Admin</h2>
+                </div>
+                <div class="space-y-4">
+                    <input type="text" id="loginUser" placeholder="Usuário" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500">
+                    <input type="password" id="loginPass" placeholder="Senha" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500">
+                    <button onclick="handleLogin()" class="w-full bg-green-500 hover:bg-green-600 text-slate-900 font-bold py-3 rounded-lg">ENTRAR</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-admin" class="hidden-view animate-in slide-in-from-bottom-4">
+            <div id="admin-form-anchor" class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 sm:mb-8 gap-4 mt-4">
+                <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5 sm:w-6 sm:h-6 text-green-500"></i> Gestão do Clube</h2>
+                <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto items-stretch sm:items-center">
+                    
+                    <select id="draftStrategy" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-slate-300 outline-none font-bold w-full sm:w-auto">
+                        <option value="FORA" selected>Estratégia: Fora Forte</option>
+                        <option value="DENTRO">Estratégia: Dentro Forte</option>
+                    </select>
+                    
+                    <div class="flex gap-2 w-full sm:w-auto items-center">
+                        <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg overflow-hidden flex-1 sm:flex-none">
+                            <span class="pl-3 pr-1 py-2 text-xs sm:text-sm font-bold text-slate-400 whitespace-nowrap">Time de:</span>
+                            <button type="button" onclick="const t = document.getElementById('teamSize'); t.value = Math.max(2, parseInt(t.value) - 1);" class="px-2 sm:px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors font-bold text-base">-</button>
+                            <input type="number" id="teamSize" value="4" min="2" max="10" class="w-6 sm:w-8 bg-transparent py-2 px-0 text-sm sm:text-base font-bold text-white text-center outline-none appearance-none m-0 pointer-events-none">
+                            <button type="button" onclick="const t = document.getElementById('teamSize'); t.value = Math.min(10, parseInt(t.value) + 1);" class="px-2 sm:px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors font-bold text-base">+</button>
+                        </div>
+                        <button onclick="drawTeams()" class="flex-[2] sm:flex-none bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors h-full"><i data-lucide="shuffle" class="w-3 h-3 sm:w-4 sm:h-4"></i> SORTEAR GERAL</button>
+                    </div>
+
+                    <div class="flex gap-2 w-full sm:w-auto justify-between sm:justify-start mt-2 sm:mt-0">
+                        <button onclick="clearTeams()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold border border-red-500/30">LIMPAR EQUIPES</button>
+                        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-400 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2"><i data-lucide="log-out" class="w-4 h-4"></i> SAIR</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div class="lg:col-span-1">
+                    <div class="bg-slate-800 p-4 sm:p-6 rounded-2xl shadow-xl border border-slate-700 lg:sticky top-24">
+                        <!-- TÍTULO CLICÁVEL COM MELHOR VISIBILIDADE -->
+                        <div class="flex justify-between items-center cursor-pointer select-none p-2 sm:p-3 -mx-2 sm:-mx-3 -mt-2 rounded-xl hover:bg-slate-900/50 transition-colors group" onclick="document.getElementById('formContent').classList.toggle('hidden'); document.getElementById('formToggleIcon').classList.toggle('rotate-180');">
+                            <h2 id="formTitle" class="text-lg sm:text-xl font-bold flex items-center gap-2 text-green-400">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i> Novo Atleta
+                            </h2>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] sm:text-xs text-slate-400 group-hover:text-green-400 font-bold transition-colors uppercase tracking-wider bg-slate-900 px-2 py-1 rounded-md border border-slate-700 group-hover:border-green-500/30">Expandir</span>
+                                <div class="bg-slate-900 p-1.5 rounded-full group-hover:bg-green-500/20 border border-slate-700 group-hover:border-green-500/30 transition-all">
+                                    <i data-lucide="chevron-down" id="formToggleIcon" class="w-5 h-5 text-slate-400 group-hover:text-green-400 transition-transform duration-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="formContent" class="space-y-4 mt-4 sm:mt-6 transition-all hidden border-t border-slate-700 pt-4">
+                            <input type="hidden" id="editId" value="">
+                            <input type="text" id="playerName" placeholder="Nome Completo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm sm:text-base outline-none focus:ring-2 focus:ring-green-500">
+                            
+                            <div class="mb-2 mt-4 flex flex-col items-center">
+                                <label class="relative cursor-pointer group/photo flex flex-col items-center">
+                                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-slate-900 border-2 border-dashed border-slate-600 flex items-center justify-center overflow-hidden group-hover/photo:border-green-500 transition-colors">
+                                        <div id="photoPlaceholder" class="text-slate-500 flex flex-col items-center">
+                                            <i data-lucide="camera" class="w-6 h-6 sm:w-8 sm:h-8 mb-1"></i>
+                                            <span class="text-[9px] sm:text-[10px] font-bold uppercase">Foto</span>
+                                        </div>
+                                        <img id="photoPreview" class="w-full h-full object-cover hidden" src="" alt="Preview">
+                                    </div>
+                                    <input type="file" id="playerPhoto" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                                    <input type="hidden" id="photoData" value="">
+                                </label>
+                                <button type="button" id="btnRemovePhoto" onclick="removePhoto()" class="mt-2 text-xs text-red-400 hover:text-red-300 font-bold hidden flex items-center gap-1 transition-colors">
+                                    <i data-lucide="trash-2" class="w-3 h-3"></i> Remover Foto
+                                </button>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mb-1 block">Categoria</label>
+                                <select id="statCategoria" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 sm:p-3 text-sm sm:text-base font-bold text-slate-200 outline-none focus:ring-2 focus:ring-green-500">
+                                    <option value="5">CABEÇA DE CHAVE</option>
+                                    <option value="4">AVANÇADO</option>
+                                    <option value="3">MÉDIO</option>
+                                    <option value="2">BÁSICO</option>
+                                    <option value="1">INICIANTE</option>
+                                </select>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-2 sm:gap-4">
+                                <div>
+                                    <label class="text-[9px] sm:text-[11px] text-blue-400 font-bold uppercase tracking-wider truncate">Partidas</label>
+                                    <input type="number" id="statJogos" value="0" min="0" oninput="if(this.value < 0) this.value = 0;" class="w-full bg-slate-900 border border-blue-500/30 rounded-lg p-2 sm:p-3 text-sm sm:text-base font-bold text-blue-400 text-center">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] sm:text-[11px] text-yellow-500 font-bold uppercase tracking-wider truncate">Vitórias</label>
+                                    <input type="number" id="statVit" value="0" min="0" oninput="if(this.value < 0) this.value = 0;" class="w-full bg-slate-900 border border-yellow-500/30 rounded-lg p-2 sm:p-3 text-sm sm:text-base font-bold text-yellow-500 text-center">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] sm:text-[11px] text-fuchsia-400 font-bold uppercase tracking-wider truncate">Ajuste Elo</label>
+                                    <div class="flex items-center bg-slate-900 border border-fuchsia-500/30 rounded-lg overflow-hidden">
+                                        <button type="button" onclick="adjustBonus(-5)" class="px-2 sm:px-3 py-2 sm:py-3 text-fuchsia-400 hover:bg-slate-800 font-black transition-colors">-</button>
+                                        <input type="number" id="statBonus" value="0" class="w-full bg-transparent p-0 text-sm sm:text-base font-bold text-fuchsia-400 text-center outline-none">
+                                        <button type="button" onclick="adjustBonus(5)" class="px-2 sm:px-3 py-2 sm:py-3 text-fuchsia-400 hover:bg-slate-800 font-black transition-colors">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-[10px] sm:text-sm font-medium text-slate-400 mb-1 mt-2">Ícone (Secundário)</label>
+                                <select id="playerIcon" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 sm:p-3 outline-none focus:ring-2 focus:ring-green-500 text-xs sm:text-sm">
+                                    <option value="user">👤 Usuário</option>
+                                    <option value="zap">⚡ Raio</option>
+                                    <option value="flame">🔥 Fogo</option>
+                                    <option value="shield">🛡️ Escudo</option>
+                                    <option value="star">⭐ Estrela</option>
+                                    <option value="target">🎯 Alvo</option>
+                                    <option value="rocket">🚀 Foguete</option>
+                                </select>
+                            </div>
+
+                            <div class="flex gap-2 mt-6">
+                                <button onclick="savePlayer()" id="btnSave" class="flex-1 bg-green-500 hover:bg-green-600 text-slate-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 text-sm sm:text-base"><i data-lucide="save" class="w-4 h-4 sm:w-5 sm:h-5"></i> SALVAR</button>
+                                <button onclick="resetForm()" id="btnCancel" class="hidden px-3 sm:px-4 bg-slate-700 rounded-lg"><i data-lucide="rotate-ccw" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-6 sm:space-y-8">
+                    <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden w-full">
+                        <div class="p-4 sm:p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/30">
+                            <h2 class="text-lg sm:text-xl font-bold">Jogadores</h2>
+                            <span id="playerCount" class="text-xs sm:text-sm text-slate-400 bg-slate-900 px-2 sm:px-3 py-1 rounded-full border border-slate-700">0 / 0 Selecionados</span>
+                        </div>
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left min-w-[500px]">
+                                <thead class="bg-slate-900/50 text-slate-400 text-xs sm:text-sm">
+                                    <tr>
+                                        <th class="px-2 sm:px-4 py-3 sm:py-4 w-8 sm:w-10 text-center"><input type="checkbox" id="selectAll" onclick="toggleAllPlayers(this.checked)" class="w-3 h-3 sm:w-4 sm:h-4 accent-green-500 cursor-pointer"></th>
+                                        <th class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">Jogador</th>
+                                        <th class="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">Categoria</th>
+                                        <th class="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">Vit / Jogos</th>
+                                        <th class="px-3 sm:px-6 py-3 sm:py-4 text-center whitespace-nowrap">Nível</th>
+                                        <th class="px-3 sm:px-6 py-3 sm:py-4 text-right whitespace-nowrap">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminTableBody" class="divide-y divide-slate-700 text-xs sm:text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="adminTeamsSection" class="hidden animate-in fade-in">
+                         <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                            <div class="p-4 sm:p-6 border-b border-slate-700 bg-green-500/10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                                <h2 class="text-lg sm:text-xl font-bold text-green-400">Equipes Atuais</h2>
+                                <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                                    <select id="waitlistStrategy" class="flex-1 sm:flex-none bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-[10px] sm:text-xs text-slate-300 outline-none font-bold">
+                                        <option value="BALANCEADO" selected>Sortear Time de Fora</option>
+                                        <option value="FORCAR">Time Fora Sempre Entra</option>
+                                    </select>
+                                    <button onclick="createWaitlist()" class="flex-1 sm:flex-none bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold border border-blue-500/30 flex items-center justify-center gap-2 transition-colors"><i data-lucide="clock" class="w-3 h-3 sm:w-4 sm:h-4"></i> ATUALIZAR ESPERA</button>
+                                    <button onclick="clearTeams()" class="flex-1 sm:flex-none bg-red-500/20 hover:bg-red-500/40 text-red-400 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold border border-red-500/30 flex items-center justify-center gap-2 transition-colors"><i data-lucide="trash-2" class="w-3 h-3 sm:w-4 sm:h-4"></i> LIMPAR TODAS</button>
+                                </div>
+                            </div>
+                            <div id="adminTeamsGrid" class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-placar" class="hidden-view animate-in zoom-in-95 duration-500">
+            <div class="max-w-5xl mx-auto bg-slate-800/40 p-2 sm:p-6 md:p-12 landscape:p-2 md:landscape:p-12 rounded-3xl border border-slate-700 shadow-2xl text-center">
+                <h2 class="text-xl sm:text-3xl landscape:text-lg md:landscape:text-3xl font-bold mb-4 sm:mb-10 landscape:mb-2 md:landscape:mb-10 flex items-center justify-center gap-2 sm:gap-3 text-white">
+                    <i data-lucide="monitor-play" class="w-5 h-5 sm:w-8 sm:h-8 landscape:w-4 landscape:h-4 md:landscape:w-8 md:landscape:h-8 text-green-500"></i> Placar do Jogo
+                </h2>
+
+                <!-- QUADRA DE VÔLEI -->
+                <div class="relative w-full flex flex-row border-2 sm:border-4 border-slate-300/80 rounded-lg shadow-[0_0_20px_rgba(0,0,0,0.5)] overflow-hidden bg-slate-800">
+                    
+                    <!-- REDE NO MEIO -->
+                    <div class="absolute z-30 flex items-center justify-center pointer-events-none left-1/2 top-0 bottom-0 -translate-x-1/2 w-4 sm:w-6 md:w-8 h-full">
+                        <!-- Padrão da Rede -->
+                        <div class="absolute inset-0 border-x-2 sm:border-x-4 border-white/80 shadow-[0_0_10px_rgba(0,0,0,0.8)]" style="background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 2px, transparent 2px, transparent 8px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 2px, transparent 2px, transparent 8px); background-color: rgba(15, 23, 42, 0.4);"></div>
+                    </div>
+
+                    <!-- METADE 1 (AZUL) -->
+                    <div class="flex-1 relative bg-blue-900/30 hover:bg-blue-900/40 transition-colors p-2 sm:p-10 md:p-14 landscape:p-2 md:landscape:p-14 min-h-[220px] sm:min-h-[450px] md:min-h-[550px] landscape:min-h-[200px] md:landscape:min-h-[550px] flex flex-col items-center justify-center">
+                        <div class="w-full relative mb-2 sm:mb-6 landscape:mb-1 md:landscape:mb-6 bg-slate-900/60 rounded-lg sm:rounded-xl p-1 sm:p-2 md:p-3 border border-blue-500/30 backdrop-blur-sm z-20">
+                            <select id="team1Select" onchange="updateLiveEloPreview()" style="text-align-last: center;" class="text-[10px] sm:text-2xl md:text-3xl landscape:text-xs md:landscape:text-3xl font-bold text-blue-400 uppercase tracking-widest bg-transparent outline-none w-full transition-colors cursor-pointer appearance-none text-center text-ellipsis overflow-hidden">
+                                <option value="" class="bg-slate-800 text-slate-300">SELECIONE</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-1 sm:right-2 md:right-4 flex items-center text-blue-400"><i data-lucide="chevron-down" class="w-3 h-3 sm:w-6 sm:h-6 landscape:w-3 landscape:h-3 md:landscape:w-6 md:landscape:h-6"></i></div>
+                        </div>
+                        <span id="score1" class="text-6xl sm:text-8xl md:text-[130px] landscape:text-5xl md:landscape:text-[130px] font-black text-white mb-2 sm:mb-8 landscape:mb-2 md:landscape:mb-8 font-['Oswald'] drop-shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-all leading-none relative z-10">0</span>
+                        <div class="flex gap-1 sm:gap-4 md:gap-6 w-full max-w-[200px] sm:max-w-[280px] md:max-w-[320px] relative z-20">
+                            <button onclick="updateScore(1, -1)" class="flex-1 bg-slate-900/80 hover:bg-slate-800 text-white font-bold py-1.5 sm:py-4 landscape:py-1 md:landscape:py-4 rounded-md sm:rounded-2xl text-xs sm:text-2xl landscape:text-xs md:landscape:text-2xl transition-all border border-slate-600/50 shadow-lg active:scale-95 backdrop-blur-md">-1</button>
+                            <button onclick="updateScore(1, 1)" class="flex-[2] bg-blue-600 hover:bg-blue-500 text-white font-black py-1.5 sm:py-4 landscape:py-1 md:landscape:py-4 rounded-md sm:rounded-2xl text-base sm:text-4xl landscape:text-sm md:landscape:text-4xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400/50 active:scale-95">+1</button>
+                        </div>
+                    </div>
+
+                    <!-- METADE 2 (VERMELHO) -->
+                    <div class="flex-1 relative bg-red-900/30 hover:bg-red-900/40 transition-colors p-2 sm:p-10 md:p-14 landscape:p-2 md:landscape:p-14 min-h-[220px] sm:min-h-[450px] md:min-h-[550px] landscape:min-h-[200px] md:landscape:min-h-[550px] flex flex-col items-center justify-center">
+                        <div class="w-full relative mb-2 sm:mb-6 landscape:mb-1 md:landscape:mb-6 bg-slate-900/60 rounded-lg sm:rounded-xl p-1 sm:p-2 md:p-3 border border-red-500/30 backdrop-blur-sm z-20">
+                            <select id="team2Select" onchange="updateLiveEloPreview()" style="text-align-last: center;" class="text-[10px] sm:text-2xl md:text-3xl landscape:text-xs md:landscape:text-3xl font-bold text-red-400 uppercase tracking-widest bg-transparent outline-none w-full transition-colors cursor-pointer appearance-none text-center text-ellipsis overflow-hidden">
+                                <option value="" class="bg-slate-800 text-slate-300">SELECIONE</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-1 sm:right-2 md:right-4 flex items-center text-red-400"><i data-lucide="chevron-down" class="w-3 h-3 sm:w-6 sm:h-6 landscape:w-3 landscape:h-3 md:landscape:w-6 md:landscape:h-6"></i></div>
+                        </div>
+                        <span id="score2" class="text-6xl sm:text-8xl md:text-[130px] landscape:text-5xl md:landscape:text-[130px] font-black text-white mb-2 sm:mb-8 landscape:mb-2 md:landscape:mb-8 font-['Oswald'] drop-shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-all leading-none relative z-10">0</span>
+                        <div class="flex gap-1 sm:gap-4 md:gap-6 w-full max-w-[200px] sm:max-w-[280px] md:max-w-[320px] relative z-20">
+                            <button onclick="updateScore(2, -1)" class="flex-1 bg-slate-900/80 hover:bg-slate-800 text-white font-bold py-1.5 sm:py-4 landscape:py-1 md:landscape:py-4 rounded-md sm:rounded-2xl text-xs sm:text-2xl landscape:text-xs md:landscape:text-2xl transition-all border border-slate-600/50 shadow-lg active:scale-95 backdrop-blur-md">-1</button>
+                            <button onclick="updateScore(2, 1)" class="flex-[2] bg-red-600 hover:bg-red-500 text-white font-black py-1.5 sm:py-4 landscape:py-1 md:landscape:py-4 rounded-md sm:rounded-2xl text-base sm:text-4xl landscape:text-sm md:landscape:text-4xl transition-all shadow-[0_0_15px_rgba(220,38,38,0.5)] border border-red-400/50 active:scale-95">+1</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="liveEloPreview" class="w-full mt-4 md:mt-6 max-w-3xl mx-auto hidden bg-slate-900/60 p-3 sm:p-5 landscape:p-2 md:landscape:p-5 rounded-xl border border-slate-700 shadow-inner flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-8 landscape:gap-2 md:landscape:gap-8 transition-all animate-in fade-in"></div>
+
+                <button onclick="resetScore()" class="mt-6 sm:mt-12 landscape:mt-4 md:landscape:mt-12 bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 sm:px-8 md:px-10 py-2 sm:py-3 landscape:py-1.5 md:landscape:py-3 rounded-full text-xs sm:text-base landscape:text-xs md:landscape:text-base font-bold inline-flex items-center justify-center gap-2 transition-colors border border-slate-600 active:scale-95">
+                    <i data-lucide="rotate-ccw" class="w-3 h-3 sm:w-5 sm:h-5 landscape:w-3 landscape:h-3 md:landscape:w-5 md:landscape:h-5"></i> ZERAR PLACAR
+                </button>
+            </div>
+
+            <!-- Times Sorteados Movidos para a Página de Placar -->
+            <div id="placarTeamsSection" class="mt-8 sm:mt-12 border-t border-slate-800 pt-8 sm:pt-12 hidden max-w-7xl mx-auto">
+                <header class="mb-6 sm:mb-10 text-center">
+                    <h2 class="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center gap-3">
+                        <i data-lucide="users" class="text-green-500 w-6 h-6 sm:w-8 sm:h-8"></i> Times Sorteados
+                    </h2>
+                </header>
+                <div id="placarTeamsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
+            </div>
+
+            <!-- Histórico de Partidas (Acordeão) -->
+            <div id="historySection" class="mt-8 sm:mt-12 border-t border-slate-800 pt-8 sm:pt-12 max-w-4xl mx-auto text-left mb-16">
+                <div class="bg-slate-800/60 rounded-2xl border border-slate-700 shadow-xl overflow-hidden">
+                    <div class="p-4 sm:p-5 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center cursor-pointer select-none hover:bg-slate-800 transition-colors group" onclick="document.getElementById('historyContent').classList.toggle('hidden'); document.getElementById('historyToggleIcon').classList.toggle('rotate-180');">
+                        <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2 text-slate-200 group-hover:text-blue-400 transition-colors">
+                            <i data-lucide="history" class="w-5 h-5 text-blue-500"></i> Histórico de Partidas
+                        </h2>
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <span class="text-[10px] sm:text-xs text-slate-400 group-hover:text-blue-400 font-bold transition-colors uppercase tracking-widest bg-slate-950 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md border border-slate-800 group-hover:border-blue-500/30">Ver Jogos</span>
+                            <div class="bg-slate-950 p-1.5 rounded-full group-hover:bg-blue-500/20 border border-slate-800 group-hover:border-blue-500/30 transition-all">
+                                <i data-lucide="chevron-down" id="historyToggleIcon" class="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-transform duration-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="historyContent" class="hidden p-4 sm:p-6 transition-all bg-slate-800/30">
+                        <div id="historyList" class="space-y-6">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="victoryModal" class="fixed inset-0 bg-slate-950/80 z-[100] hidden flex-col items-center justify-center backdrop-blur-sm animate-in fade-in duration-300 px-4">
+            <div class="bg-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl border-2 border-yellow-500 flex flex-col items-center max-w-sm w-full text-center">
+                <i data-lucide="trophy" class="w-16 h-16 sm:w-20 sm:h-20 text-yellow-400 mb-4 animate-bounce"></i>
+                <h2 class="text-2xl sm:text-3xl font-black text-white mb-2 uppercase tracking-wider">Fim de Jogo!</h2>
+                <p class="text-slate-300 mb-4 sm:mb-6 text-base sm:text-lg">A equipe vencedora é:</p>
+                
+                <div id="victoryTeamName" class="text-2xl sm:text-4xl font-black text-yellow-400 mb-3 px-4 sm:px-6 py-3 bg-slate-900 rounded-2xl border border-yellow-500/30 w-full truncate">EQUIPE 1</div>
+                
+                <div id="victoryEloInfo" class="w-full text-sm sm:text-base mb-6 hidden bg-slate-900 p-3 rounded-xl border border-slate-700 shadow-inner">
+                </div>
+
+                <p id="victoryTeamWarning" class="text-xs text-red-400 mb-4 hidden">Para contabilizar o ranking, os times precisam estar selecionados no placar.</p>
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <button onclick="closeVictoryModalOnly()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 sm:py-4 rounded-xl text-xs sm:text-sm transition-all active:scale-95">APENAS ZERAR</button>
+                    <button id="btnSaveResult" onclick="saveAndCloseVictoryModal()" class="flex-[2] bg-green-500 hover:bg-green-600 text-slate-900 font-bold py-3 sm:py-4 rounded-xl text-sm sm:text-base transition-all active:scale-95 shadow-[0_0_15px_rgba(34,197,94,0.4)]">SALVAR RANKING</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirmModal" class="fixed inset-0 bg-slate-950/80 z-[200] hidden flex-col items-center justify-center backdrop-blur-sm animate-in fade-in duration-200 px-4">
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl border border-slate-700 max-w-sm w-full text-center">
+                <div class="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                </div>
+                <h3 id="confirmTitle" class="text-xl font-bold text-white mb-2">Atenção</h3>
+                <p id="confirmMessage" class="text-slate-400 mb-6 text-sm">Tem a certeza que deseja continuar?</p>
+                <div class="flex gap-3 w-full">
+                    <button onclick="closeConfirmModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">Cancelar</button>
+                    <button id="btnConfirmAction" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-[0_0_15px_rgba(239,68,68,0.4)]">Confirmar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="movePlayerModal" class="fixed inset-0 bg-slate-950/80 z-[200] hidden flex-col items-center justify-center backdrop-blur-sm animate-in fade-in duration-200 px-4">
+            <div class="bg-slate-800 p-6 rounded-2xl shadow-2xl border border-blue-500 max-w-sm w-full text-center">
+                <i data-lucide="arrow-right-left" class="w-10 h-10 text-blue-500 mx-auto mb-4"></i>
+                <h3 class="text-xl font-bold text-white mb-2">Mover Jogador</h3>
+                <p id="movePlayerName" class="text-slate-300 mb-4 text-sm font-bold bg-slate-900 py-2 rounded-lg border border-slate-700"></p>
+
+                <div class="mb-6 text-left">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Transferir para:</label>
+                    <select id="moveDestination" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white font-bold outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                        </select>
+                </div>
+
+                <div class="flex gap-3 w-full">
+                    <button onclick="closeMoveModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors text-sm">Cancelar</button>
+                    <button onclick="confirmMovePlayer()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-[0_0_15px_rgba(59,130,246,0.4)]">Transferir</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="w-full flex justify-center pb-8 pt-4">
+        <button onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold flex items-center gap-2 transition-all border border-slate-700 shadow-lg active:scale-95">
+            <i data-lucide="arrow-up" class="w-4 h-4"></i> VOLTAR AO TOPO
+        </button>
+    </div>
+
+    <footer class="w-full py-6 sm:py-8 mt-auto border-t border-slate-800 text-center text-slate-500 text-xs sm:text-sm">
+        Desenvolvido por <span class="text-slate-300 font-bold">JLDesigner</span> e <span class="text-slate-300 font-bold">RenatoEng</span>
+    </footer>
+
+    <div id="toast" class="fixed bottom-5 right-5 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-2xl transform translate-y-24 transition-transform duration-300 flex items-center gap-2 sm:gap-3 z-[60] text-sm sm:text-base max-w-[90vw]">
+        <i id="toastIcon" data-lucide="info" class="w-4 h-4 sm:w-5 sm:h-5 shrink-0"></i>
+        <span id="toastMsg" class="truncate"></span>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
